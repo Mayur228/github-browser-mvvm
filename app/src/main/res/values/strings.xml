@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">GithubBrowser</string>
+    <string name="action_add">Add Repository</string>
+    <string name="add">Add</string>
+    <string name="favrourite_repo">Track your favrourite repo</string>
+    <string name="browser">Browser</string>
+</resources>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.detailactivity.DetailsActivity"
+    android:background="@color/white"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/repo_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="repo_name"
+        android:layout_marginLeft="15dp"
+        android:textColor="@color/black"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/repo_des"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="repo_des"
+        android:layout_marginLeft="15dp"
+        android:textColor="@color/black"
+        android:textSize="24sp" />
+
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabBackground="@drawable/border2"
+        app:tabTextColor="@color/black"
+        app:tabIndicator="@color/black"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/border2"
+        >
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/branches_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BRANCHES"
+            />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/issues_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ISSUES(0)"/>
+
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <FrameLayout
+        android:id="@+id/frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="15dp"/>
+
+</LinearLayout>
