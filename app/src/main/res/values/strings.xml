@@ -4,4 +4,6 @@
     <string name="add">Add</string>
     <string name="favrourite_repo">Track your favrourite repo</string>
     <string name="browser">Browser</string>
+    <string name="RepoName">repo_name</string>
+    <string name="RepoDes">repo_des</string>
 </resources>

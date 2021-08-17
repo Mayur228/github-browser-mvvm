@@ -53,6 +53,7 @@ class CommitActivity : AppCompatActivity() {
         commitRV.layoutManager=LinearLayoutManager(applicationContext,RecyclerView.VERTICAL,false)
 
         commitRV.adapter=CommitAdapter(listOf(),applicationContext)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -14,17 +14,24 @@ import com.example.githubbrowser.factory.MyViewModelFactory
 
 class IssueFragment : Fragment() {
 
+    companion object {
+        fun newInstance(owner: String, repositoryName: String): IssueFragment {
+            val args = Bundle()
+            args.putString("", owner)
+            args.putString("", repositoryName)
+            val fragment = IssueFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+
     var txt: TextView? = null
     var issueview: RecyclerView? = null
 
     var issueViewModel: IssueViewModel? = null
 
     var page:Int=1
-
-    fun newInstance(): IssueFragment {
-        return IssueFragment()
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,

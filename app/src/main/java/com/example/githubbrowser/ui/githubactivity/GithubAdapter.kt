@@ -12,7 +12,8 @@ import com.example.githubbrowser.model.GithubModel
 
 class GithubAdapter(
     list: List<GithubModel>,
-    private val onRepositoryClicked: (repository: GithubModel) -> Unit
+    private val onRepositoryClicked: (repository: GithubModel) -> Unit,
+    private val onRepositoryShared: (repository: GithubModel) -> Unit
 ) : RecyclerView.Adapter<GithubAdapter.GithubViewHolder>() {
 
     var list: List<GithubModel> = list
@@ -27,21 +28,28 @@ class GithubAdapter(
     }
 
     override fun onBindViewHolder(holder: GithubViewHolder, position: Int) {
-        holder.bind(list[position], onRepositoryClicked)
+        holder.bind(
+            list[position],
+            onRepositoryClicked,
+            onRepositoryShared
+        )
     }
 
     override fun getItemCount(): Int {
         return list.size
     }
 
-    class GithubViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class GithubViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
 
         private val repoName: TextView = itemView.findViewById(R.id.repo_name)
         private val repoDes: TextView = itemView.findViewById(R.id.repo_des)
         private val share: ImageView = itemView.findViewById(R.id.send_icon)
 
-
-        fun bind(model: GithubModel, onRepositoryClicked: (repository: GithubModel) -> Unit) {
+        fun bind(
+            model: GithubModel,
+            onRepositoryClicked: (repository: GithubModel) -> Unit,
+            onRepositoryShared: (repository: GithubModel) -> Unit
+        ) {
             repoName.text = model.name
             repoDes.text = model.description
 
@@ -50,15 +58,9 @@ class GithubAdapter(
             }
 
             share.setOnClickListener {
-                val shareIntent = Intent(Intent.ACTION_SEND)
-                shareIntent.type = "text/plain"
-                shareIntent.putExtra(Intent.EXTRA_TEXT, model.htmlUrl)
-                shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                itemView.context.startActivity(Intent.createChooser(shareIntent, "Send to"))
-
+                onRepositoryShared(model)
             }
         }
-
 
     }
 }

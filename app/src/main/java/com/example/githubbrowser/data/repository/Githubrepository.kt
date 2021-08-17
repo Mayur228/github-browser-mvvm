@@ -1,6 +1,5 @@
 package com.example.githubbrowser.data.repository
 
-import android.util.Log
 import com.example.githubbrowser.data.api.RetrofitServices
 import com.example.githubbrowser.model.BranchDatum
 import com.example.githubbrowser.model.CommitDatum
@@ -15,21 +14,19 @@ class Githubrepository(private val retrofitServices: RetrofitServices) {
 
     fun getRepoData(
         username:String,
-        reponame:String,
+        repoName:String,
         success: (data: GithubModel) -> Unit,
         failure: (error: Throwable) -> Unit
     ){
-        retrofitServices.getRepo(username, reponame).enqueue(object :Callback<GithubModel>{
+        retrofitServices.getRepo(username, repoName).enqueue(object :Callback<GithubModel>{
             override fun onResponse(
                 call: Call<GithubModel>,
                 response: Response<GithubModel>
             ) {
-
                 response
                     .body()
                     ?.let { success(it) }
                     ?: failure(Exception("No data"))
-
             }
 
             override fun onFailure(call: Call<GithubModel>, t: Throwable) {
@@ -38,8 +35,8 @@ class Githubrepository(private val retrofitServices: RetrofitServices) {
         })
     }
 
-    fun getBranchData(owner:String,reponame:String,success: (data: List<BranchDatum>) -> Unit,failure: (error: Throwable) -> Unit){
-        retrofitServices.getBranch(owner,reponame).enqueue(object: Callback<List<BranchDatum>>{
+    fun getBranchData(owner:String, repoName:String, success: (data: List<BranchDatum>) -> Unit, failure: (error: Throwable) -> Unit){
+        retrofitServices.getBranch(owner,repoName).enqueue(object: Callback<List<BranchDatum>>{
             override fun onResponse(call: Call<List<BranchDatum>>, response: Response<List<BranchDatum>>) {
                 response.body()?.let {
                     success(it)

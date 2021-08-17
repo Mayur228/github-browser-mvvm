@@ -1,22 +1,45 @@
 package com.example.githubbrowser.ui.detailactivity
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.example.githubbrowser.R
-import com.example.githubbrowser.ui.branchfragment.BranchFragment
-import com.example.githubbrowser.ui.issuefragment.IssueFragment
+import com.example.githubbrowser.model.GithubModel
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 class DetailsActivity : AppCompatActivity() {
+
+    companion object {
+
+        private val TAG = DetailsActivity::class.java.simpleName
+
+        private val EXTRA_OWNER_NAME = "$TAG.EXTRA_OWNER_NAME"
+
+        fun getStartIntent(
+            context: Context,
+            model: GithubModel
+        ): Intent {
+            val intent = Intent(context, DetailsActivity::class.java)
+            intent.putExtra(EXTRA_OWNER_NAME, model.owner.login)
+            intent.putExtra("RepoName", model.name)
+            intent.putExtra("RepoDes", model.description)
+            intent.putExtra("BrowserUrl", model.htmlUrl)
+            intent.putExtra("IssueCount", model.open_issues_count)
+            return intent
+
+        }
+
+
+    }
 
     private val repoName: TextView by lazy {
         findViewById(R.id.repo_name)
@@ -30,9 +53,11 @@ class DetailsActivity : AppCompatActivity() {
         findViewById(R.id.tab_layout)
     }
 
-    private lateinit var browserUrl: String
+    private val detailVP: ViewPager2 by lazy {
+        findViewById(R.id.detailVP)
+    }
 
-    lateinit var  bundle:Bundle
+    private lateinit var browserUrl: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,21 +66,61 @@ class DetailsActivity : AppCompatActivity() {
         setup()
     }
 
+    private val repositoryName: String
+        get() = intent.getStringExtra("RepoName") ?: ""
+
+    private val ownerName: String
+    get() = intent.getStringExtra(EXTRA_OWNER_NAME) ?: ""
+
+
+
+    private fun setup() {
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_action_back)
+        supportActionBar?.title = "Details"
+
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
+
+        repoName.text = repositoryName
+        repoDes.text = intent.getStringExtra("RepoDes")
+        browserUrl = intent.getStringExtra("BrowserUrl").toString()
+
+        detailVP.adapter = DetailTabAdapter(
+            ownerName,
+            repositoryName,
+            this@DetailsActivity
+        )
+
+        TabLayoutMediator(
+            tabs, detailVP
+        ) { tab, position ->
+
+            if (position == 0) {
+                tab.text = "Branch"
+
+            } else {
+                tab.text = "Issue(" + intent.getIntExtra("IssueCount", 0) + ")"
+            }
+        }.attach()
+
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.details_menu,menu)
+        menuInflater.inflate(R.menu.details_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId){
-            R.id.action_browser ->{
+        return when (item.itemId) {
+            R.id.action_browser -> {
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.data = Uri.parse(browserUrl)
                 startActivity(intent)
                 true
             }
 
-            android.R.id.home->{
+            android.R.id.home -> {
                 finish()
                 true
             }
@@ -63,59 +128,5 @@ class DetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setup() {
 
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_action_back)
-        supportActionBar?.title="Details"
-
-
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
-
-        repoName.text = intent.getStringExtra("RepoName")
-        repoDes.text = intent.getStringExtra("RepoDes")
-        browserUrl = intent.getStringExtra("BrowserUrl").toString()
-
-        tabs.getTabAt(1)?.text="Issues("+intent.getIntExtra("IssueCount",0)+")"
-
-        bundle = Bundle().apply {
-            putString("OwnerName", intent.getStringExtra("OwnerName"))
-            putString("RepoName", intent.getStringExtra("RepoName"))
-        }
-
-        changeFragment(BranchFragment().newInstance(), "Branch")
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                when (tab!!.position) {
-                    0 -> changeFragment(BranchFragment().newInstance(), "Branch")
-                    1 -> changeFragment(IssueFragment().newInstance(), "Issue")
-                    else -> Log.e("BREAK", "BREAK")
-                }
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-            }
-
-        })
-    }
-
-    fun changeFragment(fragment: Fragment, fragmentTag: String?) {
-        try {
-            val fragmentManager = supportFragmentManager
-            val fragmentTransaction = fragmentManager.beginTransaction().addToBackStack(null)
-            fragmentTransaction.replace(R.id.frame, fragment, fragmentTag)
-            fragment.arguments=bundle
-            fragmentTransaction.commit()
-        } catch (e: java.lang.Exception) {
-            Log.d("catch-Frag_Transaction", e.toString())
-        }
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
-    }
 }

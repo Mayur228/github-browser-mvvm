@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.githubbrowser.data.api.RetrofitServices
 import com.example.githubbrowser.data.repository.Githubrepository
-import com.example.githubbrowser.model.GithubModel
-import com.example.githubbrowser.model.IssueDatum
 import com.example.githubbrowser.ui.branchfragment.BranchViewModel
 import com.example.githubbrowser.ui.commitactivity.CommitViewModel
 import com.example.githubbrowser.ui.githubactivity.GithubViewModel
@@ -15,16 +13,22 @@ import java.lang.IllegalArgumentException
 object MyViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
 
-        if (modelClass.isAssignableFrom(GithubViewModel::class.java)){
-            return GithubViewModel(Githubrepository(RetrofitServices.getInstance()))as T
-        }else if (modelClass.isAssignableFrom(BranchViewModel::class.java)){
-            return BranchViewModel(Githubrepository(RetrofitServices.getInstance()))as T
-        }else if (modelClass.isAssignableFrom(IssueViewModel::class.java)){
-            return IssueViewModel(Githubrepository(RetrofitServices.getInstance()))as T
-        }else if (modelClass.isAssignableFrom(CommitViewModel::class.java)){
-            return CommitViewModel(Githubrepository(RetrofitServices.getInstance()))as T
-        }else{
-            throw IllegalArgumentException("ViewModel Not Found")
+        return when {
+            modelClass.isAssignableFrom(GithubViewModel::class.java) -> {
+                GithubViewModel(Githubrepository(RetrofitServices.getInstance()))as T
+            }
+            modelClass.isAssignableFrom(BranchViewModel::class.java) -> {
+                BranchViewModel(Githubrepository(RetrofitServices.getInstance()))as T
+            }
+            modelClass.isAssignableFrom(IssueViewModel::class.java) -> {
+                IssueViewModel(Githubrepository(RetrofitServices.getInstance()))as T
+            }
+            modelClass.isAssignableFrom(CommitViewModel::class.java) -> {
+                CommitViewModel(Githubrepository(RetrofitServices.getInstance()))as T
+            }
+            else -> {
+                throw IllegalArgumentException("ViewModel Not Found")
+            }
         }
 //        return if (modelClass.isAssignableFrom(GithubViewModel::class.java)){
 //            GithubViewModel(Githubrepository(RetrofitServices.getInstance()))as T

@@ -14,17 +14,25 @@ import com.example.githubbrowser.R
 import com.example.githubbrowser.factory.MyViewModelFactory
 import com.example.githubbrowser.model.CommitLiveData
 import com.example.githubbrowser.ui.commitactivity.CommitActivity
+import com.example.githubbrowser.ui.issuefragment.IssueFragment
 
 class BranchFragment : Fragment() {
+
+    companion object {
+        fun newInstance(owner: String, repositoryName: String): IssueFragment {
+            val args = Bundle()
+            args.putString("", owner)
+            args.putString("", repositoryName)
+            val fragment = IssueFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     private var branchNAme: TextView? = null
     private var branchRV: RecyclerView? = null
 
     private var branchViewModel: BranchViewModel? = null
-
-    fun newInstance(): BranchFragment {
-        return BranchFragment()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,7 +67,6 @@ class BranchFragment : Fragment() {
         )
     }
 
-
     private fun observeBranchData() {
         branchViewModel?.data?.observe(requireActivity(), {
 
@@ -71,7 +78,8 @@ class BranchFragment : Fragment() {
 
                 branchRV?.adapter = BranchAdapter(it, onCommitClick = { data ->
 
-                    val model=CommitLiveData( arguments?.getString("OwnerName").toString(),
+                    val model = CommitLiveData(
+                        arguments?.getString("OwnerName").toString(),
                         arguments?.getString("RepoName").toString(),
                         data.name
                     )
@@ -83,15 +91,15 @@ class BranchFragment : Fragment() {
         })
     }
 
-    private fun observeOpenCommit(){
-        branchViewModel?.openCommitEvent?.observe(requireActivity(),{
+    private fun observeOpenCommit() {
+        branchViewModel?.openCommitEvent?.observe(requireActivity(), {
 
             val intent = Intent(requireActivity(), CommitActivity::class.java)
             intent.putExtra(
-                "OwnerName",it.ownerName
+                "OwnerName", it.ownerName
             )
             intent.putExtra(
-                "RepoName",it.repoName
+                "RepoName", it.repoName
             )
             intent.putExtra("SHA", it.branchName)
             startActivity(intent)

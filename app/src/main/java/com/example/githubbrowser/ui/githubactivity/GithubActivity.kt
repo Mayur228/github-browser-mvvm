@@ -2,6 +2,8 @@ package com.example.githubbrowser.ui.githubactivity
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -63,6 +65,8 @@ class GithubActivity : AppCompatActivity() {
 
         observeAddNewRepositoryEvent()
 
+        observeShareRepositoryEvent()
+
         checkObserveRepositoryDetailEvent()
 
     }
@@ -84,9 +88,6 @@ class GithubActivity : AppCompatActivity() {
                 (listRV.adapter as? GithubAdapter)
                     ?.list = it
 
-//                for (i in it.indices) {
-//                    githubViewModel.viewRepositoryDetails(it[i])
-//                }
             }
 
         })
@@ -103,40 +104,47 @@ class GithubActivity : AppCompatActivity() {
             listOf(),
             onRepositoryClicked = { data ->
                 githubViewModel.viewRepositoryDetails(data)
+            },
+            onRepositoryShared = { model ->
+                githubViewModel.shareRepository(model)
             }
         )
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
+
     }
 
     private fun observeRepositoryDetailEvent() {
-        githubViewModel.viewRepositoryDetailsEvent.observe(this, {event->
-            event.getContentIfNotHandled()?.let{
-                val intent = Intent(this@GithubActivity, DetailsActivity::class.java)
-                intent.putExtra("OwnerName", it.owner.login)
-                intent.putExtra("RepoName", it.name)
-                intent.putExtra("RepoDes", it.description)
-                intent.putExtra("BrowserUrl", it.htmlUrl)
-                intent.putExtra("IssueCount", it.open_issues_count)
-                startActivity(intent)}
+        githubViewModel.viewRepositoryDetailsEvent.observe(this, { event ->
+            event.getContentIfNotHandled()?.let {
+                startActivity(
+                    DetailsActivity.getStartIntent(
+                        this@GithubActivity,
+                        it
+                    )
+                )
+            }
+
         })
 
 //        githubViewModel.viewRepositoryDetailsEvent.observe(this,{
 //
 //            val intent = Intent(this@GithubActivity, DetailsActivity::class.java)
-//            intent.putExtra("OwnerName", it.owner.login)
-//            intent.putExtra("RepoName", it.name)
-//            intent.putExtra("RepoDes", it.description)
-//            intent.putExtra("BrowserUrl", it.htmlUrl)
+//            intent.putExtra("OwnerName", it.peekContent().owner.login)
+//            intent.putExtra("RepoName", it.peekContent().name)
+//            intent.putExtra("RepoDes", it.peekContent().description)
+//            intent.putExtra("BrowserUrl", it.peekContent().htmlUrl)
 //            startActivity(intent)
 //        })
     }
 
     private fun checkObserveRepositoryDetailEvent() {
-        githubViewModel.viewRepositoryDetailsEvent.observe(this,{
+        githubViewModel.viewRepositoryDetailsEvent.observe(this, {
 //            it.getContentIfNotHandled()?.let {
 //                Toast.makeText(applicationContext,it.toString(),Toast.LENGTH_LONG).show()
 //            }
 
-            Toast.makeText(applicationContext,it.peekContent().toString(),Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, it.peekContent().toString(), Toast.LENGTH_LONG)
+                .show()
 
         })
     }
@@ -145,6 +153,21 @@ class GithubActivity : AppCompatActivity() {
         githubViewModel.addNewRepositoryEvent.observe(this, {
             val intent = Intent(this, AddRepoActivity::class.java)
             resultLauncher.launch(intent)
+        })
+    }
+
+    private fun observeShareRepositoryEvent() {
+        githubViewModel.shareRepositoryEvent.observe(this, {
+
+            it.getContentIfNotHandled()?.let { model ->
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "text/plain"
+                shareIntent.putExtra(Intent.EXTRA_TEXT, model.htmlUrl)
+                shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(Intent.createChooser(shareIntent, "Send to"))
+            }
+
+
         })
     }
 
