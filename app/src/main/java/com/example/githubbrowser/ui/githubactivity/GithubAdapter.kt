@@ -33,6 +33,7 @@ class GithubAdapter(
             onRepositoryClicked,
             onRepositoryShared
         )
+
     }
 
     override fun getItemCount(): Int {
@@ -60,7 +61,13 @@ class GithubAdapter(
             share.setOnClickListener {
                 onRepositoryShared(model)
             }
+
+
+
         }
+
+
+
 
     }
 }

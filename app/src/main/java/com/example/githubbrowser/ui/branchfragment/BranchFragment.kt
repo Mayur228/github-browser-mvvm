@@ -19,11 +19,12 @@ import com.example.githubbrowser.ui.issuefragment.IssueFragment
 class BranchFragment : Fragment() {
 
     companion object {
-        fun newInstance(owner: String, repositoryName: String): IssueFragment {
+
+        fun newInstance(owner: String, repositoryName: String): BranchFragment {
             val args = Bundle()
-            args.putString("", owner)
-            args.putString("", repositoryName)
-            val fragment = IssueFragment()
+            args.putString("ownerName", owner)
+            args.putString("repoName", repositoryName)
+            val fragment = BranchFragment()
             fragment.arguments = args
             return fragment
         }
@@ -62,8 +63,8 @@ class BranchFragment : Fragment() {
             ViewModelProvider(this, MyViewModelFactory).get(BranchViewModel::class.java)
 
         branchViewModel?.getBranch(
-            arguments?.getString("OwnerName").toString(),
-            arguments?.getString("RepoName").toString()
+            arguments?.getString("ownerName").toString(),
+            arguments?.getString("repoName").toString()
         )
     }
 
@@ -79,8 +80,8 @@ class BranchFragment : Fragment() {
                 branchRV?.adapter = BranchAdapter(it, onCommitClick = { data ->
 
                     val model = CommitLiveData(
-                        arguments?.getString("OwnerName").toString(),
-                        arguments?.getString("RepoName").toString(),
+                        arguments?.getString("ownerName").toString(),
+                        arguments?.getString("repoName").toString(),
                         data.name
                     )
                     branchViewModel?.openCommit(model)

@@ -21,8 +21,6 @@ class GithubViewModel(private val githubRepository: Githubrepository) : ViewMode
     val shareRepositoryEvent: LiveData<Event<GithubModel>>
         get() = _shareRepositoryEvent
 
-//    val shareRepositoryEvent = MutableLiveData<Event<GithubModel>>()
-
     fun getRepo(ownerName: String, repoName: String) {
         githubRepository
             .getRepoData(
@@ -51,7 +49,35 @@ class GithubViewModel(private val githubRepository: Githubrepository) : ViewMode
         _shareRepositoryEvent.value = Event(model)
     }
 
-//    fun shareRepositoryEvent(repository: GithubModel) {
-//        shareRepositoryEvent.value = Event(repository)
-//    }
+    fun deleteRepository(repositoryName: String,pos: Int) {
+        val existingData = data.value?.toMutableList()
+
+//        var indexToDelete = -1
+//
+//        for (i in 0 until (existingData?.size ?: 0)) {
+//            if(existingData?.get(i)?.name == repositoryName) {
+//                indexToDelete = i;
+//                break
+//            }
+//        }
+//
+//        if(indexToDelete >= 0) {
+//            existingData?.removeAt(indexToDelete)
+//        }
+
+        if (repositoryName.isEmpty()){
+            existingData?.removeAt(pos)
+            data.value = existingData
+
+        }else{
+            existingData?.removeAll {
+                it.name == repositoryName
+            }
+            data.value = existingData
+        }
+
+
+
+    }
+
 }

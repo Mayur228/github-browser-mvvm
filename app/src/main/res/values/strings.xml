@@ -6,4 +6,5 @@
     <string name="browser">Browser</string>
     <string name="RepoName">repo_name</string>
     <string name="RepoDes">repo_des</string>
+    <string name="delete">Delete</string>
 </resources>

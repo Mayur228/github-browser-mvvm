@@ -9,8 +9,32 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/r_view"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <com.tsuryo.swipeablerv.SwipeableRecyclerView
+        android:id="@+id/rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:leftBgColor="@color/red"
+        app:leftImage="@drawable/ic_action_delete"
+        app:leftText="Delete"
+        app:textColor="@android:color/white"
+        app:textSize="20sp" />
+<!--    <FrameLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+
+<!--        <com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeRecyclerView-->
+<!--            android:id="@+id/list"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            app:item_layout="@layout/github_item"-->
+<!--            app:divider="@drawable/list_divider"/>-->
+
+<!--    </FrameLayout>-->
+
 
     <TextView
         android:id="@+id/txt"

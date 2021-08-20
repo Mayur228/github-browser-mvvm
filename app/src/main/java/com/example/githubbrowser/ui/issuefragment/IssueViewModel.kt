@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModel
 import com.example.githubbrowser.data.repository.Githubrepository
 import com.example.githubbrowser.model.IssueDatum
 
-class IssueViewModel(val githubRepository: Githubrepository):ViewModel() {
+class IssueViewModel(private val githubRepository: Githubrepository):ViewModel() {
     val data = MutableLiveData<List<IssueDatum>>()
     val errorMessage = MutableLiveData<String>()
+    val model:IssueDatum?=null
 
     fun getIssue(owner:String, repoName:String, page:Int){
         githubRepository.getIssueData(owner,repoName,page,{

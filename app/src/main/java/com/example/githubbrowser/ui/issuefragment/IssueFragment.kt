@@ -11,14 +11,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
 import com.example.githubbrowser.factory.MyViewModelFactory
+import com.example.githubbrowser.ui.branchfragment.BranchFragment
 
 class IssueFragment : Fragment() {
 
     companion object {
+
+        private val TAG:String=IssueFragment::class.java.simpleName
+
+        private val EXTRA_OWNER_NAME:String="$TAG.EXTRA_OWNER_NAME"
+
+        private val EXTRA_REPO_NAME:String="$TAG.EXTRA_REPO_NAME"
+
         fun newInstance(owner: String, repositoryName: String): IssueFragment {
             val args = Bundle()
-            args.putString("", owner)
-            args.putString("", repositoryName)
+            args.putString(EXTRA_OWNER_NAME, owner)
+            args.putString(EXTRA_REPO_NAME, repositoryName)
             val fragment = IssueFragment()
             fragment.arguments = args
             return fragment
@@ -62,8 +70,8 @@ class IssueFragment : Fragment() {
         issueview?.adapter=IssueAdapter(listOf(),requireActivity().applicationContext)
 
         issueViewModel?.getIssue(
-            arguments?.getString("OwnerName").toString(),
-            arguments?.getString("RepoName").toString(),
+            arguments?.getString(EXTRA_OWNER_NAME).toString(),
+            arguments?.getString(EXTRA_REPO_NAME).toString(),
             page
         )
 
@@ -73,8 +81,8 @@ class IssueFragment : Fragment() {
 //
 //                if ((issueview?.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()==(issueview?.adapter as IssueAdapter).list.size-1){
 //                    issueViewModel?.getIssue(
-//                        arguments?.getString("OwnerName").toString(),
-//                        arguments?.getString("RepoName").toString(),
+//                        arguments?.getString(EXTRA_OWNER_NAME).toString(),
+//                        arguments?.getString(EXTRA_REPO_NAME).toString(),
 //                        page++
 //                    )
 //                }

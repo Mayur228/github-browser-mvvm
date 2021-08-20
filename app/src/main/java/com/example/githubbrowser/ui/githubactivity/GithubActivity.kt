@@ -12,12 +12,16 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
 import com.example.githubbrowser.factory.MyViewModelFactory
 import com.example.githubbrowser.ui.addrepoactivity.AddRepoActivity
 import com.example.githubbrowser.ui.detailactivity.DetailsActivity
+import com.tsuryo.swipeablerv.SwipeLeftRightCallback
+import com.tsuryo.swipeablerv.SwipeableRecyclerView
+
 
 class GithubActivity : AppCompatActivity() {
 
@@ -29,8 +33,8 @@ class GithubActivity : AppCompatActivity() {
         findViewById(R.id.add_btn)
     }
 
-    private val listRV: RecyclerView by lazy {
-        findViewById(R.id.r_view)
+    private val listRV: SwipeableRecyclerView by lazy {
+        findViewById(R.id.rv)
     }
 
     private val githubViewModel: GithubViewModel by lazy {
@@ -66,11 +70,65 @@ class GithubActivity : AppCompatActivity() {
         observeAddNewRepositoryEvent()
 
         observeShareRepositoryEvent()
-
-        checkObserveRepositoryDetailEvent()
-
     }
 
+    private fun setUp() {
+
+        addBtn.setOnClickListener {
+            githubViewModel.addNewRepository()
+        }
+
+        listRV.layoutManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
+        listRV.adapter = GithubAdapter(
+            listOf(),
+            onRepositoryClicked = { data ->
+                githubViewModel.viewRepositoryDetails(data)
+            },
+            onRepositoryShared = { model ->
+                githubViewModel.shareRepository(model)
+            }
+        )
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
+
+//        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback = object :
+//            ItemTouchHelper.SimpleCallback(
+//                0,
+//                ItemTouchHelper.LEFT
+//            ) {
+//            override fun onMove(
+//                recyclerView: RecyclerView,
+//                viewHolder: RecyclerView.ViewHolder,
+//                target: RecyclerView.ViewHolder
+//            ): Boolean {
+//                Toast.makeText(this@GithubActivity, "on Move", Toast.LENGTH_SHORT).show()
+//                return false
+//            }
+//
+//            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
+//                Toast.makeText(this@GithubActivity, "on Swiped $swipeDir", Toast.LENGTH_SHORT)
+//                    .show()
+//                githubViewModel.deleteRepository("", viewHolder.adapterPosition)
+//            }
+//
+//        }
+//
+//        val itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
+//        itemTouchHelper.attachToRecyclerView(listRV)
+
+        listRV.setListener(object : SwipeLeftRightCallback.Listener{
+            override fun onSwipedLeft(position: Int) {
+                githubViewModel.deleteRepository("", position)
+
+            }
+
+            override fun onSwipedRight(position: Int) {
+                githubViewModel.deleteRepository("", position)
+
+            }
+
+        })
+
+    }
 
     private fun observeGithubData() {
 
@@ -93,58 +151,12 @@ class GithubActivity : AppCompatActivity() {
         })
     }
 
-    private fun setUp() {
-
-        addBtn.setOnClickListener {
-            githubViewModel.addNewRepository()
-        }
-
-        listRV.layoutManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
-        listRV.adapter = GithubAdapter(
-            listOf(),
-            onRepositoryClicked = { data ->
-                githubViewModel.viewRepositoryDetails(data)
-            },
-            onRepositoryShared = { model ->
-                githubViewModel.shareRepository(model)
-            }
-        )
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
-
-    }
-
     private fun observeRepositoryDetailEvent() {
         githubViewModel.viewRepositoryDetailsEvent.observe(this, { event ->
             event.getContentIfNotHandled()?.let {
-                startActivity(
-                    DetailsActivity.getStartIntent(
-                        this@GithubActivity,
-                        it
-                    )
-                )
+                val intent = DetailsActivity.getStartIntent(this@GithubActivity, it)
+                deleteResultLauncher.launch(intent)
             }
-
-        })
-
-//        githubViewModel.viewRepositoryDetailsEvent.observe(this,{
-//
-//            val intent = Intent(this@GithubActivity, DetailsActivity::class.java)
-//            intent.putExtra("OwnerName", it.peekContent().owner.login)
-//            intent.putExtra("RepoName", it.peekContent().name)
-//            intent.putExtra("RepoDes", it.peekContent().description)
-//            intent.putExtra("BrowserUrl", it.peekContent().htmlUrl)
-//            startActivity(intent)
-//        })
-    }
-
-    private fun checkObserveRepositoryDetailEvent() {
-        githubViewModel.viewRepositoryDetailsEvent.observe(this, {
-//            it.getContentIfNotHandled()?.let {
-//                Toast.makeText(applicationContext,it.toString(),Toast.LENGTH_LONG).show()
-//            }
-
-            Toast.makeText(applicationContext, it.peekContent().toString(), Toast.LENGTH_LONG)
-                .show()
 
         })
     }
@@ -167,7 +179,6 @@ class GithubActivity : AppCompatActivity() {
                 startActivity(Intent.createChooser(shareIntent, "Send to"))
             }
 
-
         })
     }
 
@@ -186,4 +197,17 @@ class GithubActivity : AppCompatActivity() {
 
         }
 
+    private val deleteResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK && it.data != null) {
+                val repoName = it.data?.getStringExtra("DeleteRepo")
+
+                Toast.makeText(applicationContext, "$repoName Deleted", Toast.LENGTH_LONG).show()
+
+                repoName
+                    ?.let {
+                        githubViewModel.deleteRepository(it, 0)
+                    }
+            }
+        }
 }

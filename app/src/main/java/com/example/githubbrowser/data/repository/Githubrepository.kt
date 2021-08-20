@@ -50,8 +50,8 @@ class Githubrepository(private val retrofitServices: RetrofitServices) {
         })
     }
 
-    fun getIssueData(owner:String,reponame:String,page:Int,success: (data: List<IssueDatum>) -> Unit,failure: (error: Throwable) -> Unit){
-        retrofitServices.getIssue(owner,reponame,page).enqueue(object: Callback<List<IssueDatum>>{
+    fun getIssueData(owner:String, repoName:String, page:Int, success: (data: List<IssueDatum>) -> Unit, failure: (error: Throwable) -> Unit){
+        retrofitServices.getIssue(owner,repoName,page).enqueue(object: Callback<List<IssueDatum>>{
             override fun onResponse(call: Call<List<IssueDatum>>, response: Response<List<IssueDatum>>) {
                 response.body()?.let {
                     success(it)
@@ -65,8 +65,8 @@ class Githubrepository(private val retrofitServices: RetrofitServices) {
         })
     }
 
-    fun getCommitData(owner: String,reponame: String,sha: String,success: (data: List<CommitDatum>) -> Unit,failure: (error: Throwable) -> Unit){
-        retrofitServices.getCommit(owner,reponame,sha).enqueue(object :Callback<List<CommitDatum>>{
+    fun getCommitData(owner: String, repoName: String, sha: String, success: (data: List<CommitDatum>) -> Unit, failure: (error: Throwable) -> Unit){
+        retrofitServices.getCommit(owner,repoName,sha).enqueue(object :Callback<List<CommitDatum>>{
             override fun onResponse(
                 call: Call<List<CommitDatum>>,
                 response: Response<List<CommitDatum>>
