@@ -15,11 +15,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
+import com.example.githubbrowser.database.entity.GithubBrowserEntity
 import com.example.githubbrowser.ui.addrepoactivity.AddRepoActivity
 import com.example.githubbrowser.ui.detailactivity.DetailsActivity
 import com.tsuryo.swipeablerv.SwipeLeftRightCallback
 import com.tsuryo.swipeablerv.SwipeableRecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GithubActivity : AppCompatActivity() {
@@ -37,6 +39,17 @@ class GithubActivity : AppCompatActivity() {
     }
 
     private val githubViewModel:GithubViewModel by viewModels()
+
+    @Inject
+    lateinit var adapter: GithubAdapter
+
+    val onRepositoryClicked: (repository: GithubBrowserEntity) -> Unit = {
+        githubViewModel.viewRepositoryDetails(it)
+     }
+
+     val onRepositoryShared: (repository: GithubBrowserEntity) -> Unit = {
+         githubViewModel.shareRepository(it)
+     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.landing_menu, menu)
@@ -77,15 +90,14 @@ class GithubActivity : AppCompatActivity() {
         }
 
         listRV.layoutManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
-        listRV.adapter = GithubAdapter(
-            listOf(),
-            onRepositoryClicked = { data ->
-                githubViewModel.viewRepositoryDetails(data)
-            },
-            onRepositoryShared = { model ->
-                githubViewModel.shareRepository(model)
-            }
-        )
+//        listRV.adapter = GithubAdapter(
+//            onRepositoryClicked = { data ->
+//                githubViewModel.viewRepositoryDetails(data)
+//            },
+//            onRepositoryShared = { model ->
+//                githubViewModel.shareRepository(model)
+//            }
+//        )
         supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
 
 //        val simpleItemTouchCallback: ItemTouchHelper.SimpleCallback = object :
@@ -138,8 +150,13 @@ class GithubActivity : AppCompatActivity() {
                 addBtn.visibility = View.GONE
                 listRV.visibility = View.VISIBLE
 
-                (listRV.adapter as? GithubAdapter)
-                    ?.list = it
+//                (listRV.adapter as? GithubAdapter)
+//                    ?.list = it
+
+
+                adapter.setListData(it)
+
+                listRV.adapter=adapter
             }
         })
     }

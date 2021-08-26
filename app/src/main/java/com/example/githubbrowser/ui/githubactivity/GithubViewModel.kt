@@ -14,7 +14,6 @@ import javax.inject.Inject
 class GithubViewModel @Inject constructor(private val githubRepository: Githubrepository) :
     ViewModel() {
 
-    //    val data = MutableLiveData<List<GithubModel>>()
     val repoData = MutableLiveData<List<GithubBrowserEntity>>()
 
     private val errorMessage = MutableLiveData<String>()
@@ -33,17 +32,10 @@ class GithubViewModel @Inject constructor(private val githubRepository: Githubre
 
     fun getRepo(ownerName: String, repoName: String) {
         githubRepository.getRepoData(ownerName, repoName)
-            .subscribe({
-//                val existingList = (data.value ?: listOf()).toMutableList()
-//                existingList.add(it)
-//                data.value = existingList
-
-                //displayRepository()
-
-            }, {
-                errorMessage.value = it.message
-
-            })
+            .subscribe({},
+                {
+                    errorMessage.value = it.message
+                })
     }
 
     fun viewRepositoryDetails(repository: GithubBrowserEntity) {
@@ -75,9 +67,7 @@ class GithubViewModel @Inject constructor(private val githubRepository: Githubre
 
         githubRepository.deleteRepository(existingData[pos])
             .subscribe(
-                {
-                    //displayRepository()
-                },
+                {},
                 {}
             )
     }

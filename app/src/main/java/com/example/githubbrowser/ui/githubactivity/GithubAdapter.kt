@@ -11,14 +11,12 @@ import com.example.githubbrowser.database.entity.GithubBrowserEntity
 import com.example.githubbrowser.model.GithubModel
 import javax.inject.Inject
 
-class GithubAdapter @Inject constructor(
-    list: List<GithubBrowserEntity>,
+class GithubAdapter (
     private val onRepositoryClicked: (repository: GithubBrowserEntity) -> Unit,
     private val onRepositoryShared: (repository: GithubBrowserEntity) -> Unit
 ) : RecyclerView.Adapter<GithubAdapter.GithubViewHolder>() {
 
-    var list: List<GithubBrowserEntity> = list
-
+    var list: List<GithubBrowserEntity>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -30,15 +28,17 @@ class GithubAdapter @Inject constructor(
     }
 
     override fun onBindViewHolder(holder: GithubViewHolder, position: Int) {
-        holder.bind(
-            list[position],
-            onRepositoryClicked,
-            onRepositoryShared
-        )
+        list?.get(position)?.let {
+            holder.bind(
+                it,
+                onRepositoryClicked,
+                onRepositoryShared
+            )
+        }
     }
 
     override fun getItemCount(): Int {
-        return list.size
+        return list?.size ?:0
     }
 
     class GithubViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
@@ -63,5 +63,9 @@ class GithubAdapter @Inject constructor(
                 onRepositoryShared(model)
             }
         }
+    }
+
+    fun setListData(list: List<GithubBrowserEntity>) {
+        this.list=list
     }
 }

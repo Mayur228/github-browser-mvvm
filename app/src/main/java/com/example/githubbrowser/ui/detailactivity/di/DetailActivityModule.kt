@@ -1,6 +1,5 @@
 package com.example.githubbrowser.ui.detailactivity.di
 
-import android.app.Activity
 import android.content.Context
 import com.example.githubbrowser.ui.detailactivity.DetailTabAdapter
 import com.example.githubbrowser.ui.detailactivity.DetailsActivity

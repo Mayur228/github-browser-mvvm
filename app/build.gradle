@@ -39,46 +39,42 @@ android {
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    
     implementation 'androidx.core:core-ktx:1.6.0'
-
     implementation 'androidx.appcompat:appcompat:1.3.1'
-
     implementation 'com.google.android.material:material:1.4.0'
-
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
 
+    // Image Display
     implementation 'com.github.bumptech.glide:glide:4.12.0'
 
+    // Retrofit(API Calling)
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-moshi:2.1.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
 
-
+    // RX
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
 
+    // DI
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
-
     implementation "com.google.dagger:hilt-android:2.37"
     kapt "com.google.dagger:hilt-android-compiler:2.37"
-
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0-alpha03")
-
     implementation "androidx.activity:activity-ktx:1.3.1"
-
-    def fragment_version = "1.3.5"
+    def fragment_version = "1.3.6"
     implementation("androidx.fragment:fragment-ktx:$fragment_version")
     debugImplementation("androidx.fragment:fragment-testing:$fragment_version")
-    
+
+    // Rounded IMG
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
 
-    //Swipe to delete
+    // Swipe to delete
     implementation 'com.github.tsuryo:Swipeable-RecyclerView:1.1'
 
-    //room database
+    // room database
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-rxjava3:$room_version"
