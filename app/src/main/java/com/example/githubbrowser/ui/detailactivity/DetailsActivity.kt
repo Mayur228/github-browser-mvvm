@@ -11,43 +11,34 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Observer
 import androidx.viewpager2.widget.ViewPager2
 import com.example.githubbrowser.R
-import com.example.githubbrowser.factory.MyViewModelFactory
-import com.example.githubbrowser.model.GithubModel
+import com.example.githubbrowser.database.entity.GithubBrowserEntity
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Callback {
+@AndroidEntryPoint
+class DetailsActivity : AppCompatActivity(), RepositoryDeletionDialogFragment.Callback {
 
     companion object {
 
         private val TAG = DetailsActivity::class.java.simpleName
 
-        private val EXTRA_OWNER_NAME = "$TAG.EXTRA_OWNER_NAME"
-
-        private val EXTRA_REPO_NAME = "$TAG.EXTRA_REPO_NAME"
-
-        private val EXTRA_REPO_DES = "$TAG.EXTRA_REPO_DES"
-
-        private val EXTRA_BROWSER_URL = "$TAG.EXTRA_BROWSER_URL"
-
-        private val EXTRA_ISSUE_COUNTER = "$TAG.EXTRA_ISSUE_COUNTER"
+        private val EXTRA_REPOSITORY = "$TAG.EXTRA_REPOSITORY"
 
         fun getStartIntent(
             context: Context,
-            model: GithubModel
-        ):Intent{
+            model: GithubBrowserEntity
+        ): Intent {
             val intent = Intent(context, DetailsActivity::class.java)
-            intent.putExtra(EXTRA_OWNER_NAME, model.owner.login)
-            intent.putExtra(EXTRA_REPO_NAME, model.name)
-            intent.putExtra(EXTRA_REPO_DES, model.description)
-            intent.putExtra(EXTRA_BROWSER_URL, model.htmlUrl)
-            intent.putExtra(EXTRA_ISSUE_COUNTER, model.open_issues_count)
+            intent.putExtra(EXTRA_REPOSITORY, model)
             return intent
         }
 
@@ -69,11 +60,17 @@ class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Call
         findViewById(R.id.detailVP)
     }
 
-    private val detailsViewModel:DetailsViewModel by lazy {
-        ViewModelProvider(this,MyViewModelFactory).get(DetailsViewModel::class.java)
-    }
+    private val repository: GithubBrowserEntity
+        get() = intent.getParcelableExtra<GithubBrowserEntity>(EXTRA_REPOSITORY)
+            ?: throw IllegalArgumentException("Unable to find extra $EXTRA_REPOSITORY")
+
+    private val detailsViewModel: DetailsViewModel by viewModels()
+
+    @Inject
+    lateinit var tabAdapter: DetailTabAdapter
 
     private lateinit var browserUrl: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,30 +82,29 @@ class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Call
 
         observeDeletionDialog()
 
+        observeDeletionSuccessEvent()
+
     }
 
-    private val repositoryName: String
-        get() = intent.getStringExtra(EXTRA_REPO_NAME) ?: ""
+    val repositoryName
+        get() = repository.repoName
 
-    private val ownerName:String
-        get() = intent.getStringExtra(EXTRA_OWNER_NAME) ?: ""
+    val ownerName
+        get() = repository.ownerName
 
     private fun setup() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_action_back)
-        supportActionBar?.title = "Details"
+        supportActionBar?.title = getString(R.string.details)
 
         supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
 
         repoName.text = repositoryName
-        repoDes.text = intent.getStringExtra(EXTRA_REPO_DES)
-        browserUrl = intent.getStringExtra(EXTRA_BROWSER_URL).toString()
+        repoDes.text = repository.repoDes
+        browserUrl = repository.repoUrl
 
-        detailVP.adapter = DetailTabAdapter(
-            ownerName,
-            repositoryName,
-            this@DetailsActivity)
+        detailVP.adapter = tabAdapter
 
         TabLayoutMediator(
             tabs, detailVP
@@ -118,15 +114,15 @@ class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Call
                 tab.text = "Branch"
 
             } else {
-                tab.text = "Issue(" + intent.getIntExtra(EXTRA_ISSUE_COUNTER, 0) + ")"
+                tab.text = "Issue(" + repository.issueCount + ")"
             }
         }.attach()
 
     }
 
     private fun observeOpenBrowser() {
-        detailsViewModel._openBrowserEvent.observe(this,{
-            it.getContentIfNotHandled()?.let {uri->
+        detailsViewModel._openBrowserEvent.observe(this, {
+            it.getContentIfNotHandled()?.let { uri ->
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.data = Uri.parse(uri)
                 startActivity(intent)
@@ -134,11 +130,11 @@ class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Call
         })
     }
 
-    private fun observeDeletionDialog(){
-        detailsViewModel.openDeletionDialogEvent.observe(this,{
+    private fun observeDeletionDialog() {
+        detailsViewModel.openDeletionDialogEvent.observe(this, {
             it.getContentIfNotHandled()?.let {
                 RepositoryDeletionDialogFragment.newInstance(it)
-                    .show(supportFragmentManager,"DeleteDialog")
+                    .show(supportFragmentManager, "DeleteDialog")
             }
 
         })
@@ -162,50 +158,61 @@ class DetailsActivity: AppCompatActivity(),RepositoryDeletionDialogFragment.Call
             }
 
             R.id.action_delete -> {
-                detailsViewModel.openDeletionDialog(repositoryName)
+                detailsViewModel.openDeletionDialog(repository.repoName)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    override fun onRepositoryDelete(isDeleted: Boolean) {
-        if (isDeleted){
-            setResult(Activity.RESULT_OK,Intent().putExtra("DeleteRepo",repositoryName))
-            finish()
-
-        }
+    private fun observeDeletionSuccessEvent() {
+        detailsViewModel.repositoryDeleteEvent.observe(this, Observer {
+            it.getContentIfNotHandled()?.let {
+                finish()
+            }
+        })
     }
 
+    override fun onRepositoryDelete(isDeleted: Boolean) {
+        if (isDeleted) {
+
+            setResult(Activity.RESULT_OK, Intent().putExtra("DeleteRepo", true))
+            finish()
+
+            detailsViewModel.deleteRepository(repository)
+        }
+    }
 }
 
-class RepositoryDeletionDialogFragment: DialogFragment() {
+class RepositoryDeletionDialogFragment : DialogFragment() {
 
     companion object {
         private val TAG = RepositoryDeletionDialogFragment::class.java.simpleName
 
         private val EXTRA_REPO_NAME = "$TAG.EXTRA_OWNER_NAME"
-        fun newInstance(repoName:String): RepositoryDeletionDialogFragment {
+        fun newInstance(repoName: String): RepositoryDeletionDialogFragment {
             val args = Bundle()
-            args.putString(EXTRA_REPO_NAME,repoName)
+            args.putString(EXTRA_REPO_NAME, repoName)
             val fragment = RepositoryDeletionDialogFragment()
             fragment.arguments = args
             return fragment
         }
     }
 
-    private var callback: Callback?=null
+    private var callback: Callback? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.apply {
-                setPositiveButton("Yes"
+                setPositiveButton(
+                    "Yes"
                 ) { dialog, id ->
                     callback?.onRepositoryDelete(true)
 
                 }
-                setNegativeButton("No"
+                setNegativeButton(
+                    "No"
                 ) { dialog, id ->
                     callback?.onRepositoryDelete(false)
                 }
@@ -213,21 +220,21 @@ class RepositoryDeletionDialogFragment: DialogFragment() {
                 setTitle("Are you sure you want to delete ${arguments?.getString("repoName")}?")
             }
             builder.create()
-        }?:throw (IllegalStateException("Activity Not Found"))
+        } ?: throw (IllegalStateException("Activity Not Found"))
 
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        callback=context as?Callback
+        callback = context as? Callback
     }
 
     override fun onDetach() {
         super.onDetach()
-        callback=null
+        callback = null
     }
 
     interface Callback {
-     fun onRepositoryDelete(isDeleted: Boolean)
+        fun onRepositoryDelete(isDeleted: Boolean)
     }
 }

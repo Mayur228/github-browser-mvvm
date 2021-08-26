@@ -7,33 +7,36 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
-import com.example.githubbrowser.factory.MyViewModelFactory
 import com.example.githubbrowser.model.CommitLiveData
 import com.example.githubbrowser.ui.commitactivity.CommitActivity
-import com.example.githubbrowser.ui.issuefragment.IssueFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class BranchFragment : Fragment() {
-
     companion object {
+        private val TAG: String = BranchFragment::class.java.simpleName
+        val OWNER_NAME: String = "$TAG.OWNER_NAME"
+        val REPO_NAME: String = "$TAG.REPO_NAME"
 
         fun newInstance(owner: String, repositoryName: String): BranchFragment {
             val args = Bundle()
-            args.putString("ownerName", owner)
-            args.putString("repoName", repositoryName)
+            args.putString(OWNER_NAME, owner)
+            args.putString(REPO_NAME, repositoryName)
             val fragment = BranchFragment()
             fragment.arguments = args
             return fragment
         }
     }
 
+
     private var branchNAme: TextView? = null
     private var branchRV: RecyclerView? = null
 
-    private var branchViewModel: BranchViewModel? = null
+    private val branchViewModel: BranchViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,17 +62,14 @@ class BranchFragment : Fragment() {
         branchRV?.layoutManager =
             LinearLayoutManager(activity?.applicationContext, RecyclerView.VERTICAL, false)
 
-        branchViewModel =
-            ViewModelProvider(this, MyViewModelFactory).get(BranchViewModel::class.java)
-
-        branchViewModel?.getBranch(
-            arguments?.getString("ownerName").toString(),
-            arguments?.getString("repoName").toString()
+        branchViewModel.getBranch(
+            arguments?.getString(OWNER_NAME).toString(),
+            arguments?.getString(REPO_NAME).toString()
         )
     }
 
     private fun observeBranchData() {
-        branchViewModel?.data?.observe(requireActivity(), {
+        branchViewModel.data.observe(requireActivity(), {
 
             if (it.isEmpty()) {
                 branchNAme?.visibility = View.VISIBLE
@@ -80,11 +80,11 @@ class BranchFragment : Fragment() {
                 branchRV?.adapter = BranchAdapter(it, onCommitClick = { data ->
 
                     val model = CommitLiveData(
-                        arguments?.getString("ownerName").toString(),
-                        arguments?.getString("repoName").toString(),
+                        arguments?.getString(OWNER_NAME).toString(),
+                        arguments?.getString(REPO_NAME).toString(),
                         data.name
                     )
-                    branchViewModel?.openCommit(model)
+                    branchViewModel.openCommit(model)
 
                 })
 
@@ -93,7 +93,7 @@ class BranchFragment : Fragment() {
     }
 
     private fun observeOpenCommit() {
-        branchViewModel?.openCommitEvent?.observe(requireActivity(), {
+        branchViewModel.openCommitEvent.observe(requireActivity(), {
 
             val intent = Intent(requireActivity(), CommitActivity::class.java)
             intent.putExtra(

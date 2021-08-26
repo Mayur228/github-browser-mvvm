@@ -18,11 +18,11 @@ import com.example.githubbrowser.R
 
 class AddRepoActivity : AppCompatActivity() {
 
-    private val reponame: EditText by lazy {
+    private val etxRepo:EditText by lazy {
         findViewById(R.id.ext_repo)
     }
 
-    private val repoowner: EditText by lazy {
+    private val etxOwner:EditText by lazy {
         findViewById(R.id.ext_owner)
     }
 
@@ -56,16 +56,16 @@ class AddRepoActivity : AppCompatActivity() {
         supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.parseColor("#000000")))
 
 
-        add.setOnClickListener(View.OnClickListener {
+        add.setOnClickListener {
             setResult(
                 Activity.RESULT_OK,
                 Intent()
-                    .putExtra("REPOOWNER", repoowner.text.toString().trim())
-                    .putExtra("REPONAME", reponame.text.toString().trim())
+                    .putExtra("REPOOWNER", etxOwner.text.toString().trim())
+                    .putExtra("REPONAME", etxRepo.text.toString().trim())
             )
 
             finish()
-        })
+        }
 
     }
 

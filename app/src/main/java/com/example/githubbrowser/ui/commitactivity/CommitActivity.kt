@@ -5,20 +5,23 @@ import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
-import com.example.githubbrowser.factory.MyViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CommitActivity : AppCompatActivity() {
     private val commitRV:RecyclerView by lazy {
         findViewById(R.id.commit_view)
     }
 
-    private val commitViewModel by lazy {
-        ViewModelProvider(this,MyViewModelFactory).get(CommitViewModel::class.java)
-    }
+//    private val commitViewModel by lazy {
+//        ViewModelProvider(this,MyViewModelFactory).get(CommitViewModel::class.java)
+//    }
+
+    private val commitViewModel:CommitViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

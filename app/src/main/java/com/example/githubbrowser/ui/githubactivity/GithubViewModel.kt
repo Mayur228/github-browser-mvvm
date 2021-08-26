@@ -6,38 +6,47 @@ import androidx.lifecycle.ViewModel
 import com.example.githubbrowser.data.Event
 import com.example.githubbrowser.data.SingleLiveEvent
 import com.example.githubbrowser.data.repository.Githubrepository
-import com.example.githubbrowser.model.GithubModel
+import com.example.githubbrowser.database.entity.GithubBrowserEntity
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class GithubViewModel(private val githubRepository: Githubrepository) : ViewModel() {
+@HiltViewModel
+class GithubViewModel @Inject constructor(private val githubRepository: Githubrepository) :
+    ViewModel() {
 
-    val data = MutableLiveData<List<GithubModel>>()
-    val errorMessage = MutableLiveData<String>()
+    //    val data = MutableLiveData<List<GithubModel>>()
+    val repoData = MutableLiveData<List<GithubBrowserEntity>>()
 
-    val viewRepositoryDetailsEvent = MutableLiveData<Event<GithubModel>>()
+    private val errorMessage = MutableLiveData<String>()
+
+    val viewRepositoryDetailsEvent = MutableLiveData<Event<GithubBrowserEntity>>()
 
     val addNewRepositoryEvent = SingleLiveEvent<Unit>()
 
-    private val _shareRepositoryEvent = MutableLiveData<Event<GithubModel>>()
-    val shareRepositoryEvent: LiveData<Event<GithubModel>>
+    private val _shareRepositoryEvent = MutableLiveData<Event<GithubBrowserEntity>>()
+    val shareRepositoryEvent: LiveData<Event<GithubBrowserEntity>>
         get() = _shareRepositoryEvent
 
-    fun getRepo(ownerName: String, repoName: String) {
-        githubRepository
-            .getRepoData(
-                ownerName,
-                repoName,
-                {
-                    val existingList = (data.value ?: listOf()).toMutableList()
-                    existingList.add(it)
-                    data.value = existingList
-                },
-                {
-                    errorMessage.value = it.message
-                }
-            )
+    init {
+        displayRepository()
     }
 
-    fun viewRepositoryDetails(repository: GithubModel) {
+    fun getRepo(ownerName: String, repoName: String) {
+        githubRepository.getRepoData(ownerName, repoName)
+            .subscribe({
+//                val existingList = (data.value ?: listOf()).toMutableList()
+//                existingList.add(it)
+//                data.value = existingList
+
+                //displayRepository()
+
+            }, {
+                errorMessage.value = it.message
+
+            })
+    }
+
+    fun viewRepositoryDetails(repository: GithubBrowserEntity) {
         viewRepositoryDetailsEvent.value = Event(repository)
     }
 
@@ -45,39 +54,32 @@ class GithubViewModel(private val githubRepository: Githubrepository) : ViewMode
         addNewRepositoryEvent.value = Unit
     }
 
-    fun shareRepository(model: GithubModel) {
+    fun shareRepository(model: GithubBrowserEntity) {
         _shareRepositoryEvent.value = Event(model)
     }
 
-    fun deleteRepository(repositoryName: String,pos: Int) {
-        val existingData = data.value?.toMutableList()
-
-//        var indexToDelete = -1
-//
-//        for (i in 0 until (existingData?.size ?: 0)) {
-//            if(existingData?.get(i)?.name == repositoryName) {
-//                indexToDelete = i;
-//                break
-//            }
-//        }
-//
-//        if(indexToDelete >= 0) {
-//            existingData?.removeAt(indexToDelete)
-//        }
-
-        if (repositoryName.isEmpty()){
-            existingData?.removeAt(pos)
-            data.value = existingData
-
-        }else{
-            existingData?.removeAll {
-                it.name == repositoryName
+    fun displayRepository() {
+        githubRepository.getRepository().subscribe(
+            {
+                repoData.value = it
+            },
+            {
+                errorMessage.value = it.message
             }
-            data.value = existingData
-        }
+        )
+    }
 
+    fun deleteRepository(pos: Int) {
 
+        val existingData = repoData.value ?: return
 
+        githubRepository.deleteRepository(existingData[pos])
+            .subscribe(
+                {
+                    //displayRepository()
+                },
+                {}
+            )
     }
 
 }

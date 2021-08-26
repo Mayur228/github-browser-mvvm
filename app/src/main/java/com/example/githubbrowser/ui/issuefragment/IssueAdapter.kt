@@ -10,15 +10,16 @@ import com.bumptech.glide.Glide
 import com.example.githubbrowser.R
 import com.example.githubbrowser.model.IssueDatum
 import de.hdodenhof.circleimageview.CircleImageView
+import javax.inject.Inject
 
-class IssueAdapter(list: List<IssueDatum>, var contaxt: Context) :
+class IssueAdapter @Inject constructor(list: List<IssueDatum>, var contaxt: Context) :
     RecyclerView.Adapter<IssueAdapter.IssueViewHolder>() {
 
-    var list: List<IssueDatum> =list
-    set(value) {
-        field=value
-        notifyDataSetChanged()
-    }
+    var list: List<IssueDatum> = list
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IssueViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.issue_item, parent, false)
@@ -30,7 +31,7 @@ class IssueAdapter(list: List<IssueDatum>, var contaxt: Context) :
     }
 
     override fun getItemCount(): Int {
-        return list.size ?: 0
+        return list.size
     }
 
     inner class IssueViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

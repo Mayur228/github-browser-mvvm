@@ -7,8 +7,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
 import com.example.githubbrowser.model.BranchDatum
+import javax.inject.Inject
 
-class BranchAdapter(var list: List<BranchDatum>,val onCommitClick:(branchData:BranchDatum)->Unit):RecyclerView.Adapter<BranchAdapter.BranchViewHolder> (){
+class BranchAdapter @Inject constructor(var list: List<BranchDatum>,val onCommitClick:(branchData:BranchDatum)->Unit):RecyclerView.Adapter<BranchAdapter.BranchViewHolder> (){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BranchViewHolder {
         val view= LayoutInflater.from(parent.context).inflate(R.layout.branch_item,parent,false)

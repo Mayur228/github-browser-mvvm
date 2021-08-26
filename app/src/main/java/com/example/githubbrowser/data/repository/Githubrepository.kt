@@ -1,85 +1,84 @@
 package com.example.githubbrowser.data.repository
 
 import com.example.githubbrowser.data.api.RetrofitServices
+import com.example.githubbrowser.database.db.AppDatabase
+import com.example.githubbrowser.database.entity.GithubBrowserEntity
 import com.example.githubbrowser.model.BranchDatum
 import com.example.githubbrowser.model.CommitDatum
 import com.example.githubbrowser.model.GithubModel
 import com.example.githubbrowser.model.IssueDatum
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.lang.Exception
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.schedulers.Schedulers
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class Githubrepository(private val retrofitServices: RetrofitServices) {
+@Singleton
+class Githubrepository @Inject constructor(
+    private val retrofitServices: RetrofitServices,
+    private val database: AppDatabase
+) {
 
     fun getRepoData(
-        username:String,
-        repoName:String,
-        success: (data: GithubModel) -> Unit,
-        failure: (error: Throwable) -> Unit
-    ){
-        retrofitServices.getRepo(username, repoName).enqueue(object :Callback<GithubModel>{
-            override fun onResponse(
-                call: Call<GithubModel>,
-                response: Response<GithubModel>
-            ) {
-                response
-                    .body()
-                    ?.let { success(it) }
-                    ?: failure(Exception("No data"))
-            }
+        username: String,
+        repoName: String,
+    ): Single<GithubModel> {
+        // check if already in database
 
-            override fun onFailure(call: Call<GithubModel>, t: Throwable) {
-                failure(t)
+        return retrofitServices
+            .getRepo(username, repoName)
+            .flatMap { githubModel ->
+                database
+                    .githubBrowserDoa.addRepository(
+                        GithubBrowserEntity(
+                            id = 0,
+                            repoName = githubModel.name,
+                            repoDes = githubModel.description,
+                            repoUrl = githubModel.htmlUrl,
+                            ownerName = githubModel.owner.login,
+                            issueCount = githubModel.open_issues_count
+                        )
+                    )
+                    .map {  githubModel }
             }
-        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun getBranchData(owner:String, repoName:String, success: (data: List<BranchDatum>) -> Unit, failure: (error: Throwable) -> Unit){
-        retrofitServices.getBranch(owner,repoName).enqueue(object: Callback<List<BranchDatum>>{
-            override fun onResponse(call: Call<List<BranchDatum>>, response: Response<List<BranchDatum>>) {
-                response.body()?.let {
-                    success(it)
-                }?: failure(Exception("No Data"))
-
-            }
-
-            override fun onFailure(call: Call<List<BranchDatum>>, t: Throwable) {
-                failure(t)
-            }
-        })
+    fun getBranchData(owner: String, repoName: String): Single<List<BranchDatum>> {
+        return retrofitServices.getBranch(owner, repoName)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun getIssueData(owner:String, repoName:String, page:Int, success: (data: List<IssueDatum>) -> Unit, failure: (error: Throwable) -> Unit){
-        retrofitServices.getIssue(owner,repoName,page).enqueue(object: Callback<List<IssueDatum>>{
-            override fun onResponse(call: Call<List<IssueDatum>>, response: Response<List<IssueDatum>>) {
-                response.body()?.let {
-                    success(it)
-                }?: failure(Exception("No Data"))
-
-            }
-
-            override fun onFailure(call: Call<List<IssueDatum>>, t: Throwable) {
-                failure(t)
-            }
-        })
+    fun getIssueData(owner: String, repoName: String, page: Int): Single<List<IssueDatum>> {
+        return retrofitServices.getIssue(owner, repoName, page)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun getCommitData(owner: String, repoName: String, sha: String, success: (data: List<CommitDatum>) -> Unit, failure: (error: Throwable) -> Unit){
-        retrofitServices.getCommit(owner,repoName,sha).enqueue(object :Callback<List<CommitDatum>>{
-            override fun onResponse(
-                call: Call<List<CommitDatum>>,
-                response: Response<List<CommitDatum>>
-            ) {
-                response.body()?.let {
-                    success(it)
-                }?: failure(Exception("NO DATA"))
-            }
+    fun getCommitData(owner: String, repoName: String, sha: String): Single<List<CommitDatum>> {
+        return retrofitServices.getCommit(owner, repoName, sha)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
 
-            override fun onFailure(call: Call<List<CommitDatum>>, t: Throwable) {
-                failure(t)
-            }
+    fun getRepository(): Observable<List<GithubBrowserEntity>> {
 
-        })
+        return database
+            .githubBrowserDoa
+            .getRepository()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun deleteRepository(model: GithubBrowserEntity) : Completable{
+        return database
+            .githubBrowserDoa
+            .deleteRepository(model)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 }

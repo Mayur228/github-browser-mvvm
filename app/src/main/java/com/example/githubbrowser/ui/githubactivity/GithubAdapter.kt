@@ -1,6 +1,5 @@
 package com.example.githubbrowser.ui.githubactivity
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,15 +7,18 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
+import com.example.githubbrowser.database.entity.GithubBrowserEntity
 import com.example.githubbrowser.model.GithubModel
+import javax.inject.Inject
 
-class GithubAdapter(
-    list: List<GithubModel>,
-    private val onRepositoryClicked: (repository: GithubModel) -> Unit,
-    private val onRepositoryShared: (repository: GithubModel) -> Unit
+class GithubAdapter @Inject constructor(
+    list: List<GithubBrowserEntity>,
+    private val onRepositoryClicked: (repository: GithubBrowserEntity) -> Unit,
+    private val onRepositoryShared: (repository: GithubBrowserEntity) -> Unit
 ) : RecyclerView.Adapter<GithubAdapter.GithubViewHolder>() {
 
-    var list: List<GithubModel> = list
+    var list: List<GithubBrowserEntity> = list
+
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -33,7 +35,6 @@ class GithubAdapter(
             onRepositoryClicked,
             onRepositoryShared
         )
-
     }
 
     override fun getItemCount(): Int {
@@ -47,12 +48,12 @@ class GithubAdapter(
         private val share: ImageView = itemView.findViewById(R.id.send_icon)
 
         fun bind(
-            model: GithubModel,
-            onRepositoryClicked: (repository: GithubModel) -> Unit,
-            onRepositoryShared: (repository: GithubModel) -> Unit
+            model: GithubBrowserEntity,
+            onRepositoryClicked: (repository: GithubBrowserEntity) -> Unit,
+            onRepositoryShared: (repository: GithubBrowserEntity) -> Unit
         ) {
-            repoName.text = model.name
-            repoDes.text = model.description
+            repoName.text = model.repoName
+            repoDes.text = model.repoDes
 
             itemView.setOnClickListener {
                 onRepositoryClicked(model)
@@ -61,13 +62,6 @@ class GithubAdapter(
             share.setOnClickListener {
                 onRepositoryShared(model)
             }
-
-
-
         }
-
-
-
-
     }
 }

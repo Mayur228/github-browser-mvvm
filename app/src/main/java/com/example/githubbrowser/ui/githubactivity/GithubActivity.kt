@@ -10,19 +10,18 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
-import com.example.githubbrowser.factory.MyViewModelFactory
 import com.example.githubbrowser.ui.addrepoactivity.AddRepoActivity
 import com.example.githubbrowser.ui.detailactivity.DetailsActivity
 import com.tsuryo.swipeablerv.SwipeLeftRightCallback
 import com.tsuryo.swipeablerv.SwipeableRecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class GithubActivity : AppCompatActivity() {
 
     private val txt: TextView by lazy {
@@ -37,9 +36,7 @@ class GithubActivity : AppCompatActivity() {
         findViewById(R.id.rv)
     }
 
-    private val githubViewModel: GithubViewModel by lazy {
-        ViewModelProvider(this, MyViewModelFactory).get(GithubViewModel::class.java)
-    }
+    private val githubViewModel:GithubViewModel by viewModels()
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.landing_menu, menu)
@@ -63,13 +60,14 @@ class GithubActivity : AppCompatActivity() {
 
         setUp()
 
-        observeGithubData()
+        observeRoomDb()
 
         observeRepositoryDetailEvent()
 
         observeAddNewRepositoryEvent()
 
         observeShareRepositoryEvent()
+
     }
 
     private fun setUp() {
@@ -117,12 +115,11 @@ class GithubActivity : AppCompatActivity() {
 
         listRV.setListener(object : SwipeLeftRightCallback.Listener{
             override fun onSwipedLeft(position: Int) {
-                githubViewModel.deleteRepository("", position)
 
             }
 
             override fun onSwipedRight(position: Int) {
-                githubViewModel.deleteRepository("", position)
+                githubViewModel.deleteRepository(position)
 
             }
 
@@ -130,11 +127,9 @@ class GithubActivity : AppCompatActivity() {
 
     }
 
-    private fun observeGithubData() {
-
-        githubViewModel.data.observe(this, {
-
-            if (it == null) {
+    private fun observeRoomDb(){
+        githubViewModel.repoData.observe(this,{
+            if (it.isEmpty()) {
                 txt.visibility = View.VISIBLE
                 addBtn.visibility = View.VISIBLE
                 listRV.visibility = View.GONE
@@ -145,9 +140,7 @@ class GithubActivity : AppCompatActivity() {
 
                 (listRV.adapter as? GithubAdapter)
                     ?.list = it
-
             }
-
         })
     }
 
@@ -174,13 +167,14 @@ class GithubActivity : AppCompatActivity() {
             it.getContentIfNotHandled()?.let { model ->
                 val shareIntent = Intent(Intent.ACTION_SEND)
                 shareIntent.type = "text/plain"
-                shareIntent.putExtra(Intent.EXTRA_TEXT, model.htmlUrl)
+                shareIntent.putExtra(Intent.EXTRA_TEXT, model.repoUrl)
                 shareIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(Intent.createChooser(shareIntent, "Send to"))
             }
 
         })
     }
+
 
     private val resultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -200,14 +194,11 @@ class GithubActivity : AppCompatActivity() {
     private val deleteResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK && it.data != null) {
-                val repoName = it.data?.getStringExtra("DeleteRepo")
+                val isDeleted = it.data?.getBooleanExtra("DeleteRepo",false)
 
-                Toast.makeText(applicationContext, "$repoName Deleted", Toast.LENGTH_LONG).show()
-
-                repoName
-                    ?.let {
-                        githubViewModel.deleteRepository(it, 0)
-                    }
+                if(isDeleted == true){
+                    githubViewModel.displayRepository()
+                }
             }
         }
 }

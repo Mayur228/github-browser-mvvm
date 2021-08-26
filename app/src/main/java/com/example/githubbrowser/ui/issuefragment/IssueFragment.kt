@@ -6,22 +6,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubbrowser.R
-import com.example.githubbrowser.factory.MyViewModelFactory
-import com.example.githubbrowser.ui.branchfragment.BranchFragment
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.components.FragmentComponent
 
+@AndroidEntryPoint
 class IssueFragment : Fragment() {
 
     companion object {
 
-        private val TAG:String=IssueFragment::class.java.simpleName
+        private val TAG: String = IssueFragment::class.java.simpleName
 
-        private val EXTRA_OWNER_NAME:String="$TAG.EXTRA_OWNER_NAME"
+        private val EXTRA_OWNER_NAME: String = "$TAG.EXTRA_OWNER_NAME"
 
-        private val EXTRA_REPO_NAME:String="$TAG.EXTRA_REPO_NAME"
+        private val EXTRA_REPO_NAME: String = "$TAG.EXTRA_REPO_NAME"
 
         fun newInstance(owner: String, repositoryName: String): IssueFragment {
             val args = Bundle()
@@ -31,15 +35,15 @@ class IssueFragment : Fragment() {
             fragment.arguments = args
             return fragment
         }
-    }
 
+    }
 
     var txt: TextView? = null
     var issueview: RecyclerView? = null
 
-    var issueViewModel: IssueViewModel? = null
+    private val issueViewModel: IssueViewModel by viewModels()
 
-    var page:Int=1
+    var page: Int = 1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,11 +69,11 @@ class IssueFragment : Fragment() {
         issueview?.layoutManager =
             LinearLayoutManager(activity?.applicationContext, RecyclerView.VERTICAL, false)
 
-        issueViewModel = ViewModelProvider(this, MyViewModelFactory).get(IssueViewModel::class.java)
+//        issueViewModel = ViewModelProvider(this, MyViewModelFactory).get(IssueViewModel::class.java)
 
-        issueview?.adapter=IssueAdapter(listOf(),requireActivity().applicationContext)
+        issueview?.adapter = IssueAdapter(listOf(), requireActivity().applicationContext)
 
-        issueViewModel?.getIssue(
+        issueViewModel.getIssue(
             arguments?.getString(EXTRA_OWNER_NAME).toString(),
             arguments?.getString(EXTRA_REPO_NAME).toString(),
             page
@@ -92,13 +96,13 @@ class IssueFragment : Fragment() {
     }
 
     private fun observeIssueData() {
-        issueViewModel?.data?.observe(requireActivity(), {
+        issueViewModel.data.observe(requireActivity(), {
 
             if (it.isEmpty()) {
                 txt?.text = ("No Issues")
             } else {
 //                issueview?.adapter = IssueAdapter(it, requireActivity().applicationContext)
-                (issueview?.adapter as IssueAdapter).list= it
+                (issueview?.adapter as IssueAdapter).list = it
 
             }
         }

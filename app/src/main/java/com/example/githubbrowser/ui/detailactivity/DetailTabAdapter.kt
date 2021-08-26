@@ -5,8 +5,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.githubbrowser.ui.branchfragment.BranchFragment
 import com.example.githubbrowser.ui.issuefragment.IssueFragment
+import javax.inject.Inject
 
-class DetailTabAdapter(
+class DetailTabAdapter @Inject constructor(
     private val owner: String,
     private val repositoryName: String,
     fragmentActivity: FragmentActivity
